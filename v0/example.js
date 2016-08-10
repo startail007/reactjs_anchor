@@ -6,57 +6,79 @@ var getPosition = function(el) {
 
 var Anchor = React.createClass({
     getInitialState: function() {
-        return {lock:false,min:null,offset:10};
+        return {
+            TopBool:this.props.offsetTop!=undefined,
+            lockTop:false,
+            offsetTop:this.props.offsetTop==undefined?0:this.props.offsetTop,
+            BottomBool:this.props.offsetBottom!=undefined,
+            lockBottom:false,
+            offsetBottom:this.props.offsetBottom==undefined?0:this.props.offsetBottom,
+            className:this.props.className || "",
+            zIndex:this.props.zIndex || ""
+        };
     },
-    componentWillMount: function () {
-        /*setInterval(function(){
-            var r = this.refs.anchor.getBoundingClientRect();
-            //console.log(window.scrollY);
-            if(r.top<=0){
-                this.setState({lock:true})
-            }else{
-                //console.log("aaa",r.top,window.scrollY)
-                this.setState({lock:false})
-            }
-        }.bind(this),1000/30);*/
-        
-        //setTimeout(function(){
-            
-            //console.log(r,window.scrollY,window.scrollY+r.top);
-        //}.bind(this),1000/30);
-        
-        
+    componentWillMount: function () {        
+        this.min=null;
+        this.max=null;
     },
+    componentWillUnmount: function () {
+         window.removeEventListener("scroll", this.update);
+    },    
     componentDidMount: function () {
-        var r = this.refs.anchor.getBoundingClientRect();
-        this.setState({min:window.scrollY+r.top-this.state.offset});
-        setInterval(function(){
-            if(this.state.min!=null){                
-                if(window.scrollY>this.state.min){
-                    this.setState({lock:true})
-                }else{
-                    this.setState({lock:false})
-                }
+        this.r = this.refs.box.getBoundingClientRect();
+        this.min = window.scrollY+this.r.top-this.state.offsetTop;
+        this.max = window.scrollY+this.r.top+this.state.offsetBottom - window.innerHeight;
+        this.update();
+        window.addEventListener("scroll", this.update);
+    },
+    update:function(){
+        if(this.min!=null){  
+            //console.log(window.scrollY)
+            if(this.state.TopBool && window.scrollY>this.min){
+                this.setState({lockTop:true,lockBottom:false})
+            }else if(this.state.BottomBool && window.scrollY<this.max){                
+                this.setState({lockTop:false,lockBottom:true})
+            }else {
+                this.setState({lockTop:false,lockBottom:false})
             }
-        }.bind(this),1000/30);
+        }
     },
     componentWillUnmount:function(){
     },
     componentDidUpdate: function(prevProps, prevState){        
     },      
     render: function() {   
-        var AnchorStyle = {};
-        if(this.state.lock){
+        var BoxStyle = {};
+        var BoxClass = "box"
+        if(this.state.lockTop){
             //console.log("aaa")
-            AnchorStyle = {position:'fixed',top:this.state.offset}
+            BoxStyle = {position:'fixed',top:this.state.offsetTop,zIndex:this.state.zIndex};
+            BoxClass += " activeTop";
+        }else if(this.state.lockBottom){
+            //console.log("aaa")
+            BoxStyle = {position:'fixed',top:window.innerHeight - this.state.offsetBottom,zIndex:this.state.zIndex};
+            BoxClass += " activeBottom";
         }
+        var text = " " + (this.state.lockTop?("左上角固定在上方" + this.state.offsetTop):(this.state.lockBottom?("左上角固定在下方" + this.state.offsetBottom):""))
         return (
-                <div ref = "anchor" className = "Anchor" style={AnchorStyle}>                      
+                <div ref = "anchor" className = {"Anchor " + this.state.className}>
+                    <div ref = "box" className = {BoxClass}  style={BoxStyle} >                        
+                        {this.props.children}
+                        {text}
+                    </div> 
                 </div> 
         );
     }
 });
 ReactDOM.render(
-    <Anchor />,
+    <Anchor offsetTop = {0} className = "Anchor01">第一個</Anchor>,
     document.getElementById('example01')
+);
+ReactDOM.render(
+    <Anchor offsetTop = {40} className = "Anchor02">第二個</Anchor>,
+    document.getElementById('example02')
+);
+ReactDOM.render(
+    <Anchor offsetTop = {80} offsetBottom = {100} className = "Anchor03">第三個</Anchor>,
+    document.getElementById('example03')
 );
