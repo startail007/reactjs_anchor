@@ -3,7 +3,7 @@
 ### 簡說
 當範圍到達某個定位，就固定住位置。
 ### 演示
-[線上觀看](http://virtools.github.io/reactjs_anchor/v0/index.html)
+[線上觀看](http://startail007.github.io/reactjs_anchor/v0/index.html)
 ### 設置
 |設置|默認值|描述|
 |---|---|---|
